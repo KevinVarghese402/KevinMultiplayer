@@ -12,8 +12,15 @@ public class CarControls : NetworkBehaviour
     private void Update()
     {
         if (!IsLocalPlayer) return;
-
         VerticalInput = Input.GetAxis("Vertical");
         HorizontalInput = Input.GetAxis("Horizontal");
+        SubmitInputsServerRpc(VerticalInput, HorizontalInput);
+    }
+    
+    [ServerRpc]
+    private void SubmitInputsServerRpc(float vInput, float hInput)
+    {
+        var car = GetComponent<CarScript>();
+        car.ReceiveInput(vInput, hInput);
     }
 }
