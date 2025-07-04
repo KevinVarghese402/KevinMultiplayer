@@ -4,8 +4,10 @@ using Unity.Netcode;
 public class CarScript : NetworkBehaviour
 {
     public Rigidbody rigid;
+    public Vector3 centerOfMassOfCar = new Vector3(0f, -0.5f, 0f);
     public WheelCollider wheel1, wheel2, Steeringwheel3, Steeringwheel4;
     private CarControls carcontrols;
+    private bool isDrifting = false;
 
     private float verticalInput;
     private float horizontalInput;
@@ -14,6 +16,11 @@ public class CarScript : NetworkBehaviour
     {
         base.OnNetworkSpawn();
         carcontrols = GetComponent<CarControls>();
+
+        if (IsLocalPlayer && rigid != null)
+        {
+            rigid.centerOfMass += centerOfMassOfCar;
+        }
     }
 
     private void FixedUpdate()
@@ -33,13 +40,39 @@ public class CarScript : NetworkBehaviour
         Steeringwheel4.motorTorque = motor;
 
         float steer = carcontrols.steerSpeed * horizontalInput;
-        wheel1.steerAngle = steer;
-        wheel2.steerAngle = steer;
+        
+        Steeringwheel3.steerAngle = steer;
+        Steeringwheel4.steerAngle = steer;
+
+        ApplyFriction(isDrifting); 
     }
 
-    public void ReceiveInput(float vInput, float hInput)
+    public void ReceiveInput(float vInput, float hInput, bool driftinput)
     {
         verticalInput = vInput;
         horizontalInput = hInput;
+        isDrifting = driftinput; 
+    }
+    private void ApplyFriction(bool drifting)
+    {
+        WheelFrictionCurve rearFriction = Steeringwheel3.sidewaysFriction;
+      
+
+        if (drifting)
+        {
+            rearFriction.extremumValue = 0.2f;
+            rearFriction.asymptoteValue = 0.1f;
+            rearFriction.stiffness = 0.4f;   
+        }
+        else
+        {
+            rearFriction.extremumValue = 1.5f;
+            rearFriction.asymptoteValue = 1.0f;
+            rearFriction.stiffness = 1.0f;
+        }
+        //fwd so keeping the front 2 gripped
+        wheel1.sidewaysFriction = rearFriction;
+        wheel2.sidewaysFriction = rearFriction;
+        
     }
 }
