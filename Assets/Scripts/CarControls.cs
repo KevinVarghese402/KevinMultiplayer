@@ -21,10 +21,13 @@ public class CarControls : NetworkBehaviour
         SubmitInputsServerRpc(VerticalInput, HorizontalInput, driftInput);
     }
     
-    [ServerRpc]
+    [Rpc(SendTo.Server, RequireOwnership = false)]
     private void SubmitInputsServerRpc(float vInput, float hInput, bool driftinput)
     {
         var car = GetComponent<CarScript>();
-        car.ReceiveInput(vInput, hInput, driftinput);
+        if (car != null)
+        {
+            car.ReceiveInput(vInput, hInput, driftinput);
+        }
     }
 }
