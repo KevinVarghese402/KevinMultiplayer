@@ -8,7 +8,8 @@ public class CarScript : NetworkBehaviour
     public WheelCollider wheel1, wheel2, Steeringwheel3, Steeringwheel4;
     private CarControls carcontrols;
     private bool isDrifting = false;
-
+    [SerializeField] private GameObject cameraObject;
+    
     private float verticalInput;
     private float horizontalInput;
 
@@ -16,7 +17,8 @@ public class CarScript : NetworkBehaviour
     {
         base.OnNetworkSpawn();
         carcontrols = GetComponent<CarControls>();
-
+        if(IsLocalPlayer) cameraObject.SetActive(true);
+        
         if (IsLocalPlayer && rigid != null)
         {
             rigid.centerOfMass += centerOfMassOfCar;
@@ -66,7 +68,7 @@ public class CarScript : NetworkBehaviour
         }
         else
         {
-            rearFriction.extremumValue = 1.5f;
+            rearFriction.extremumValue = 2.0f;
             rearFriction.asymptoteValue = 1.0f;
             rearFriction.stiffness = 1.0f;
         }

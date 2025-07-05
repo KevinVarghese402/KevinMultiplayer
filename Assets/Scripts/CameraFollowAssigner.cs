@@ -2,35 +2,28 @@ using UnityEngine;
 using Unity.Netcode;
 using Unity.Cinemachine;
 
-public class CameraFollowAssigner : MonoBehaviour
+public class CameraFollowAssigner : NetworkBehaviour
 {
-    private CinemachineVirtualCamera vcam;
-
     void Start()
     {
-        vcam = GetComponent<CinemachineVirtualCamera>();
+        if (!IsOwner) return; // Only the local player activates their camera
 
-        Debug.Log("📦 Current GameObject: " + gameObject.name);
-
+        var vcam = GetComponentInChildren<CinemachineVirtualCamera>(true); // 'true' finds inactive objects
         if (vcam == null)
         {
-            Debug.LogError("CinemachineVirtualCamera not found on: " + gameObject.name);
+            Debug.LogWarning("CinemachineVirtualCamera not found.");
             return;
         }
-        else
-        {
-            Debug.Log("CinemachineVirtualCamera FOUND on: " + gameObject.name);
-        }
 
-        foreach (var netObject in FindObjectsOfType<NetworkObject>())
+        // Enable this camera only for the local player
+        vcam.gameObject.SetActive(true);
+
+        // Optional: follow a specific camera target under the car
+        var cameraTarget = transform.Find("CameraTarget");
+        if (cameraTarget != null)
         {
-            if (netObject.IsOwner)
-            {
-                Debug.Log("Found local player's object: " + netObject.name);
-                vcam.Follow = netObject.transform;
-                vcam.LookAt = netObject.transform;
-                break;
-            }
+            vcam.Follow = cameraTarget;
+            vcam.LookAt = cameraTarget;
         }
     }
 }

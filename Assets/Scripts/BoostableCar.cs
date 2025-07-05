@@ -1,8 +1,11 @@
+using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using Unity.Netcode;
 
 public class BoostableCar : NetworkBehaviour
 {
+    public float boostForce = 10f;
     private Rigidbody rb;
 
     private void Awake()
@@ -10,10 +13,13 @@ public class BoostableCar : NetworkBehaviour
         rb = GetComponent<Rigidbody>();
     }
 
-    public void Boost(float boostForce)
+    public void RequestBoost()
     {
-        if (!IsOwner) return; // Only apply boost on the local player
-        Vector3 boostDirection = transform.forward;
-        rb.AddForce(boostDirection * boostForce, ForceMode.VelocityChange);
+        if (rb != null)
+        {
+            Vector3 boostDirection = transform.forward;
+            rb.AddForce(boostDirection * boostForce, ForceMode.VelocityChange);
+        }
     }
+
 }

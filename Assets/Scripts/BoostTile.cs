@@ -1,15 +1,16 @@
 using UnityEngine;
+using Unity.Netcode;
 
-public class BoosterTile : MonoBehaviour
+public class BoosterTile : NetworkBehaviour
 {
-    public float boostForce = 10f;
-
     private void OnTriggerEnter(Collider other)
     {
-        BoostableCar boostable = other.GetComponentInParent<BoostableCar>();
+        if (!IsServer) return; // Server is authoritative for physics and triggering
+
+        var boostable = other.GetComponentInParent<BoostableCar>();
         if (boostable != null)
         {
-            boostable.Boost(boostForce);
+            boostable.RequestBoost(); // Direct call on server-side instance
         }
     }
-}ggi
+}
