@@ -5,12 +5,13 @@ public class LaunchTile : NetworkBehaviour
 {
     private void OnTriggerEnter(Collider other)
     {
-        if (!IsServer) return; // Ensure only server handles this
-
+        if (!IsServer) return; 
         var launchable = other.GetComponentInParent<LaunchableCar>();
         if (launchable != null)
         {
-            launchable.TriggerLaunch(); // Call directly on server
+            Vector3 launchAudioPosition = transform.position;
+            
+            launchable.TriggerLaunchRpc(launchAudioPosition);
         }
     }
 }

@@ -1240,6 +1240,10 @@ MonoBehaviour:
   wheel2: {fileID: 466495853890678067}
   Steeringwheel3: {fileID: 7045349465350418330}
   Steeringwheel4: {fileID: 2951040069001618686}
+  engineAudioSource: {fileID: 4060818465960230981}
+  engineClip: {fileID: 8300000, guid: 737d3af28f343524281ef7b5c74dfde8, type: 3}
+  minPitch: 0.8
+  maxPitch: 2
   tyreMarks:
   - {fileID: 701316237882445892}
   - {fileID: 4035854207437041232}
@@ -1258,6 +1262,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   launchForce: 15
+  hearRadius: 15
+  audioSource: {fileID: 4060818465960230981}
+  launchClip: {fileID: 8300000, guid: 0c9a0d40b28f2b04db066777b37e0eb8, type: 3}
 --- !u!114 &-8555460813293613688
 MonoBehaviour:
   m_ObjectHideFlags: 0

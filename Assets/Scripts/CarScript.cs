@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using Unity.Netcode;
 
@@ -8,6 +9,12 @@ public class CarScript : NetworkBehaviour
     public WheelCollider wheel1, wheel2, Steeringwheel3, Steeringwheel4;
     private CarControls carcontrols;
     private bool isDrifting = false;
+    
+    [Header("Engine Audio")]
+    public AudioSource engineAudioSource;
+    public AudioClip engineClip;
+    public float minPitch = 0.8f;
+    public float maxPitch = 2.0f;
     
     //reset timer
     private float upsideDownTimer = 0f;
@@ -21,15 +28,32 @@ public class CarScript : NetworkBehaviour
     private float verticalInput;
     private float horizontalInput;
 
+
+
     public override void OnNetworkSpawn()
     {
+        
+        
+        //carcontrols
         base.OnNetworkSpawn();
         carcontrols = GetComponent<CarControls>();
+        
+        //camera
         if(IsLocalPlayer) cameraObject.SetActive(true);
         
+        //car weight
         if (IsLocalPlayer && rigid != null)
         {
             rigid.centerOfMass += centerOfMassOfCar;
+        }
+        
+        //car sounds
+        if (IsLocalPlayer && engineAudioSource != null && engineClip != null)
+        {
+            engineAudioSource.clip = engineClip;
+            engineAudioSource.loop = true;
+            engineAudioSource.volume = 0.03f;
+            engineAudioSource.Play();
         }
     }
 
@@ -41,6 +65,12 @@ public class CarScript : NetworkBehaviour
         if (IsServer)
         {
             CheckIfUpsideDown();
+        }
+        
+        if (IsLocalPlayer && engineAudioSource != null)
+        {
+            float speed = rigid.linearVelocity.magnitude;
+            engineAudioSource.pitch = Mathf.Lerp(minPitch, maxPitch, speed / 20f); // adjust 20f as needed
         }
         
     }
@@ -61,11 +91,11 @@ public class CarScript : NetworkBehaviour
 
         if (isDrifting == true)
         {
-         
+            startEmmiter();
         }
         else
-        {
-         
+        { 
+            stopEmmiter();
         }
     }
 

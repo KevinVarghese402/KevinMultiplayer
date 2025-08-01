@@ -10,14 +10,15 @@ public class BoostableCar : NetworkBehaviour
     private Rigidbody rb;
 
     public AudioSource audioSource;
+  
     public AudioClip boostClip;
+    
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
         
         if (audioSource == null)
             audioSource = GetComponent<AudioSource>();
-        
     }
 
     public void RequestBoost()
@@ -31,7 +32,6 @@ public class BoostableCar : NetworkBehaviour
         }
 
         // Tell all clients to play the boost sound
-        
         PlayBoostSFXRpc(transform.position);
     }
 
