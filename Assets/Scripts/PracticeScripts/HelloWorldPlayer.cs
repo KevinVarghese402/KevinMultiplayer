@@ -17,7 +17,7 @@ namespace HelloWorld
 
         public void Move()
         {
-            SubmitPositionRequestRpc();
+            //SubmitPositionRequestRpc();
         }
 
         [Rpc(SendTo.Server)]

@@ -1,56 +1,54 @@
 using System;
-using Unity.Netcode;
-using Unity.Networking.Transport.Relay;
-using Unity.Services.Authentication;
+using System.Threading.Tasks;
 using UnityEngine;
+using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
 using Unity.Services.Core;
+using Unity.Services.Authentication;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
-using Unity.Netcode.Transports.UTP;
 
 public class Relay : MonoBehaviour
 {
     public static Relay Instance;
-    
+
     private void Awake()
     {
         if (Instance == null)
         {
-            Instance = this; //  Assign the static instance
+            Instance = this;
+            DontDestroyOnLoad(gameObject); // Optional: keep between scenes
         }
         else
         {
-            Destroy(gameObject); 
+            Destroy(gameObject);
         }
     }
+
     private async void Start()
     {
-        // Initialize Unity Services
-        await UnityServices.InitializeAsync();
-        
-        AuthenticationService.Instance.SignedIn += () =>
+        // Initialize Unity Services 
+        if (UnityServices.State != ServicesInitializationState.Initialized)
         {
-            Debug.Log("Signed In As " + AuthenticationService.Instance.PlayerId);
-        };
+            await UnityServices.InitializeAsync();
+        }
 
-        // Sign in anonymously
-        await AuthenticationService.Instance.SignInAnonymouslyAsync();
-        
-      
-   
+        if (!AuthenticationService.Instance.IsSignedIn)
+        {
+            await AuthenticationService.Instance.SignInAnonymouslyAsync();
+            Debug.Log("Signed in as: " + AuthenticationService.Instance.PlayerId);
+        }
     }
-
-    public async void CreateRelay()
+    
+    public async Task<string> CreateRelayAndReturnJoinCode()
     {
         try
         {
-            // Create a relay allocation for up to 4 players
             Allocation allocation = await RelayService.Instance.CreateAllocationAsync(4);
-            
             string joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
-            Debug.Log("Join Code: " + joinCode);
 
-            // Set the relay server data for the host
+            Debug.Log("Relay Join Code (Host): " + joinCode);
+
             UnityTransport transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
             transport.SetHostRelayData(
                 allocation.RelayServer.IpV4,
@@ -60,26 +58,26 @@ public class Relay : MonoBehaviour
                 allocation.ConnectionData
             );
 
-            // Start hosting
             NetworkManager.Singleton.StartHost();
-            Debug.Log("Host started with Relay.");
+            Debug.Log("Relay host started.");
+
+            return joinCode;
         }
         catch (RelayServiceException e)
         {
-            Debug.LogError("Relay Create Error: " + e);
+            Debug.LogError("Relay host creation failed: " + e);
+            return null;
         }
     }
-
-    // Call this function with a join code to connect as a client
+    
     public async void JoinRelay(string joinCode)
     {
         try
         {
-            Debug.Log("Trying to join Relay with code: " + joinCode);
+            Debug.Log("Joining Relay with code: " + joinCode);
 
-            
             JoinAllocation joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinCode);
-            
+
             UnityTransport transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
             transport.SetClientRelayData(
                 joinAllocation.RelayServer.IpV4,
@@ -90,13 +88,12 @@ public class Relay : MonoBehaviour
                 joinAllocation.HostConnectionData
             );
 
-            // Start the client connection
             NetworkManager.Singleton.StartClient();
-            Debug.Log("Client joined Relay.");
+            Debug.Log("Relay client joined.");
         }
         catch (RelayServiceException e)
         {
-            Debug.LogError("Error: " + e);
+            Debug.LogError("Relay client join failed: " + e);
         }
     }
 }

@@ -21,13 +21,13 @@ namespace HelloWorld
             GUILayout.BeginArea(new Rect(10, 10, 300, 300));
             if (!m_NetworkManager.IsClient && !m_NetworkManager.IsServer)
             {
-                StartButtons();
+                //StartButtons();
             }
             else
             {
-                StatusLabels();
+                //StatusLabels();
 
-                SubmitNewPosition();
+                //SubmitNewPosition();
             }
 
             GUILayout.EndArea();

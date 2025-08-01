@@ -11,7 +11,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/RaceTrack.unity
     guid: e892612dd2f67134cb2bc33fdc4c4c31
-  - enabled: 1
+  - enabled: 0
     path: Assets/Widgets/Scenes/WidgetsQuickstart.unity
     guid: 63a3ec46919f5b147af580e12d703e37
   m_configObjects:

@@ -61,21 +61,11 @@ public class CarScript : NetworkBehaviour
 
         if (isDrifting == true)
         {
-            ApplyGrip(wheel1, sideStiffness:0.2f, forwardStiffness:0.2f);
-            ApplyGrip(wheel2, sideStiffness:0.2f, forwardStiffness:0.2f);
-            //front wheels
-            ApplyGrip(Steeringwheel3, sideStiffness:1.2f, forwardStiffness:1.8f);
-            ApplyGrip(Steeringwheel4, sideStiffness:1.2f, forwardStiffness:1.8f);
-            startEmmiter();
+         
         }
         else
         {
-            ApplyGrip(wheel1, sideStiffness: 1.0f, forwardStiffness: 1.3f);
-            ApplyGrip(wheel2, sideStiffness: 1.0f, forwardStiffness: 1.3f);
-            //front wheels
-            ApplyGrip(Steeringwheel3, sideStiffness: 1.2f, forwardStiffness: 1.4f);
-            ApplyGrip(Steeringwheel4, sideStiffness: 1.2f, forwardStiffness: 1.4f);
-            stopEmmiter();
+         
         }
     }
 
@@ -87,18 +77,7 @@ public class CarScript : NetworkBehaviour
     }
     private void ApplyGrip(WheelCollider wheels, float sideStiffness, float forwardStiffness)
     {
-        WheelFrictionCurve sideFriction = Steeringwheel3.sidewaysFriction;
-        sideFriction.extremumValue = 2.0f;
-        sideFriction.asymptoteValue = 1.0f;
-        sideFriction.stiffness = sideStiffness;
-        wheels.sidewaysFriction = sideFriction;
-        
 
-        WheelFrictionCurve forwardFriction = Steeringwheel3.forwardFriction;
-        forwardFriction.extremumValue = 2.0f;
-        forwardFriction.asymptoteValue = 1.0f;
-        forwardFriction.stiffness = forwardStiffness;
-        wheels.forwardFriction = forwardFriction;
         
     }
 
