@@ -27,9 +27,7 @@ public class CarScript : NetworkBehaviour
     
     private float verticalInput;
     private float horizontalInput;
-
-
-
+    
     public override void OnNetworkSpawn()
     {
         
