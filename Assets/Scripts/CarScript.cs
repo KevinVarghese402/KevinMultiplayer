@@ -16,6 +16,10 @@ public class CarScript : NetworkBehaviour
     public float minPitch = 0.8f;
     public float maxPitch = 2.0f;
     
+    [Header("Drifting Audio")]
+    public AudioSource DriftingSource;
+    public AudioClip driftingClip;
+    
     //reset timer
     private float upsideDownTimer = 0f;
     private float resetDelay = 2f; // seconds before reset
@@ -30,7 +34,6 @@ public class CarScript : NetworkBehaviour
     
     public override void OnNetworkSpawn()
     {
-        
         
         //carcontrols
         base.OnNetworkSpawn();
@@ -87,10 +90,18 @@ public class CarScript : NetworkBehaviour
         Steeringwheel3.steerAngle = steer;
         Steeringwheel4.steerAngle = steer;
 
-        if (isDrifting == true)
+        if (isDrifting == true && Mathf.Abs(horizontalInput) > 0.1f)
         {
             startEmmiter();
+            float direction = Mathf.Sign(horizontalInput);
+            Vector3 rearPosition = transform.position - transform.forward * 1.5f;
+            Vector3 forceDirection = transform.right * direction;
+            rigid.AddForceAtPosition(forceDirection * 50f, rearPosition, ForceMode.Impulse);
+            
+            //drfitn noise
+            DriftingSource.PlayOneShot(driftingClip);
         }
+
         else
         { 
             stopEmmiter();
@@ -103,12 +114,7 @@ public class CarScript : NetworkBehaviour
         horizontalInput = hInput;
         isDrifting = driftinput; 
     }
-    private void ApplyGrip(WheelCollider wheels, float sideStiffness, float forwardStiffness)
-    {
-
-        
-    }
-
+    
     private void CheckIfUpsideDown()
     {
         if (Vector3.Dot(transform.up, Vector3.up) < 0.1f)

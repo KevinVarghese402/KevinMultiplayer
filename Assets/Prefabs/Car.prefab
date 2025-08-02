@@ -1178,7 +1178,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6214953629852663725}
   serializedVersion: 4
-  m_Mass: 1550
+  m_Mass: 2000
   m_Drag: 0
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -1245,6 +1245,8 @@ MonoBehaviour:
   engineClip: {fileID: 8300000, guid: 737d3af28f343524281ef7b5c74dfde8, type: 3}
   minPitch: 0.8
   maxPitch: 2
+  DriftingSource: {fileID: 4060818465960230981}
+  driftingClip: {fileID: 8300000, guid: 42deaadd1148f704d95e0f7fc85f5409, type: 3}
   tyreMarks:
   - {fileID: 701316237882445892}
   - {fileID: 4035854207437041232}
