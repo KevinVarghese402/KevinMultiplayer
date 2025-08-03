@@ -20,35 +20,36 @@ public class CarScript : NetworkBehaviour
     public AudioSource DriftingSource;
     public AudioClip driftingClip;
     
-    //reset timer
+    // Reset timer
     private float upsideDownTimer = 0f;
-    private float resetDelay = 2f; // seconds before reset
+    private float resetDelay = 2f; 
     
-    //Drifting Marks
+    // Drifting marks
     public TrailRenderer[] tyreMarks;
     
     [SerializeField] private GameObject cameraObject;
     
+    // Inputs received from the controls (updated by CarControls server RPC)
     private float verticalInput;
     private float horizontalInput;
-    
+
+    // Store last input sent to clients to minimize redundant network calls
+    private float lastVerticalInput = 0f;
+    private float lastHorizontalInput = 0f;
+    private bool lastIsDrifting = false;
+
     public override void OnNetworkSpawn()
     {
-        
-        //carcontrols
         base.OnNetworkSpawn();
         carcontrols = GetComponent<CarControls>();
-        
-        //camera
-        if(IsLocalPlayer) cameraObject.SetActive(true);
-        
-        //car weight
+
+        if (IsLocalPlayer) cameraObject.SetActive(true);
+
         if (IsLocalPlayer && rigid != null)
         {
             rigid.centerOfMass += centerOfMassOfCar;
         }
-        
-        //car sounds
+
         if (IsLocalPlayer && engineAudioSource != null && engineClip != null)
         {
             engineAudioSource.clip = engineClip;
@@ -61,21 +62,28 @@ public class CarScript : NetworkBehaviour
     private void FixedUpdate()
     {
         if (!IsServer) return;
-        ApplyMovement_Rpc();
 
-        if (IsServer)
+        // Send movement RPC to clients only if input changed to avoid flooding network
+        if (verticalInput != lastVerticalInput || horizontalInput != lastHorizontalInput || isDrifting != lastIsDrifting)
         {
-            CheckIfUpsideDown();
+            ApplyMovement_Rpc();
+
+            lastVerticalInput = verticalInput;
+            lastHorizontalInput = horizontalInput;
+            lastIsDrifting = isDrifting;
+
+            
         }
-        
+
+        CheckIfUpsideDown();
+
         if (IsLocalPlayer && engineAudioSource != null)
         {
-            float speed = rigid.linearVelocity.magnitude;
-            engineAudioSource.pitch = Mathf.Lerp(minPitch, maxPitch, speed / 20f); // adjust 20f as needed
+            float speed = rigid.linearVelocity.magnitude; // Use rigid.velocity for current velocity
+            engineAudioSource.pitch = Mathf.Lerp(minPitch, maxPitch, speed / 20f);
         }
-        
     }
-    
+
     [Rpc(SendTo.ClientsAndHost, RequireOwnership = false)]
     private void ApplyMovement_Rpc()
     {
@@ -86,33 +94,32 @@ public class CarScript : NetworkBehaviour
         Steeringwheel4.motorTorque = motor;
 
         float steer = carcontrols.steerSpeed * horizontalInput;
-        
+
         Steeringwheel3.steerAngle = steer;
         Steeringwheel4.steerAngle = steer;
 
-        if (isDrifting == true && Mathf.Abs(horizontalInput) > 0.1f)
+        if (isDrifting && Mathf.Abs(horizontalInput) > 0.1f)
         {
-            startEmmiter();
+            startEmitter();
+            
             float direction = Mathf.Sign(horizontalInput);
             Vector3 rearPosition = transform.position - transform.forward * 1.5f;
             Vector3 forceDirection = transform.right * direction;
             rigid.AddForceAtPosition(forceDirection * 50f, rearPosition, ForceMode.Impulse);
-            
-            //drfitn noise
             DriftingSource.PlayOneShot(driftingClip);
         }
-
         else
-        { 
-            stopEmmiter();
+        {
+            stopEmitter();
         }
     }
 
-    public void ReceiveInput(float vInput, float hInput, bool driftinput)
+    // Called from CarControls' ServerRpc when client sends input
+    public void ReceiveInput(float vInput, float hInput, bool driftInput)
     {
         verticalInput = vInput;
         horizontalInput = hInput;
-        isDrifting = driftinput; 
+        isDrifting = driftInput;
     }
     
     private void CheckIfUpsideDown()
@@ -129,21 +136,22 @@ public class CarScript : NetworkBehaviour
         }
         else
         {
-            upsideDownTimer = 0f; // reset if not upside down
+            upsideDownTimer = 0f;
         }
     }
+
     private void ResetCarUpright()
     {
         Vector3 currentEuler = transform.eulerAngles;
         transform.eulerAngles = new Vector3(0, currentEuler.y, 0);
-        
+
         transform.position += Vector3.up * 1.5f;
-        
+
         rigid.linearVelocity = Vector3.zero;
         rigid.angularVelocity = Vector3.zero;
     }
 
-    private void startEmmiter()
+    private void startEmitter()
     {
         foreach (TrailRenderer T in tyreMarks)
         {
@@ -151,7 +159,7 @@ public class CarScript : NetworkBehaviour
         }
     }
 
-    private void stopEmmiter()
+    private void stopEmitter()
     {
         foreach (TrailRenderer T in tyreMarks)
         {
